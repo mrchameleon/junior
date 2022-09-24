@@ -1,0 +1,26 @@
+
+# Initialization (Setup)
+1. Create a random population of N elements with random DNA / genetic material
+
+# Forever loop (Draw)
+2. SELECTION - Evaluate fitness of each element of the population 
+(fitness in relation to an ideal target if known) 
+build a "mating pool" (larger)
+
+3. Reproduction
+    a. SELECT -- two parents with probability according to relative fitness
+    b. CROSSOVER -- create a child - mix/combine DNA of parents
+    c. MUTATION -- mutate the childs DNA based on a given probability
+    d. Add the new child to a NEW population
+
+4. Replace the old population with the new population and return to Step 2.
+(evolution cycles)
+
+
+Key Principles:
+- Fitness
+- Heredity/Reproduction ("2 or 2+ parents" in the population "reproduce" and add a "child" with mixed elements of both parents)
+- Variation
+- Selection (Determine fitness)
+
+
