@@ -1,68 +1,51 @@
-let vibrations = [];
+let vibrations = [];  // population
+let junior;
 
-const colors = {'hotpink': 'rgb(231,18,231)'}
 
-function setup() {
-  createCanvas(1024, 768);
-  
-  // spawn particles at random locations
-  // for (let i = 0; i < 5; i++) {
-  //   vibrations.push(new Particle(random(width), random(height)));
-  // }
-  
-  // 5 particles spawning at center of canvas --  with specified directions/angles
-  const startx = width / 2;
-  const starty = height / 2;
-  
-  vibrations.push(new Particle(startx, starty, 0, 'tbd', 'head'));  // above center origin (head)
-  
-  vibrations.push(new Particle(startx, starty, 315, 'tbd', 'L-arm'));  // L ARM
-  vibrations.push(new Particle(startx, starty, 45, 'tbd', 'R-arm'));  // R ARM
-  
-  vibrations.push(new Particle(startx, starty, 225, 'tbd', 'L-leg'));  // L LEG
-  vibrations.push(new Particle(startx, starty, 135, 'tbd', 'R-leg'));  // R LEG
-  
-}
-
-function draw() {
-  background(0);
-  
-  for (let i = 0; i < vibrations.length; i++) {
-    vibrations[i].show();
-    vibrations[i].update();
-  }
-
-  fill(colors.hotpink);
-  ellipse(width / 2, height / 2, 20, 20);
-  
-}
-
-// enable spawning more particles at will by clicking the mouse
-function mousePressed() {
-  randomAngle = random(0,360);
-  randomColor = 'tbd';
-  
-  vibrations.push(new Particle(mouseX, mouseY, randomAngle, randomColor, 'baby'));
-}
-
-class Particle {
-
-  constructor(x, y, angle, color, label) {
+class Junior {
+  constructor(x,y, hue) {
     this.x = x;
     this.y = y;
+    this.hue = hue;
     
-    this.angle = angle;
-    this.color = color;
-    this.label = label;
-    
-    this.xoff1 = 0;  // for perlin noise experimentation
-    this.xoff2 = 10000;  // for perlin noise experimentation
-    this.history = [];
+    this.nodes = [];
   }
-
+  
   update() {
-    // length or range of each draw step
+    for (let i = 0; i < this.nodes.length; i++) {
+      this.nodes[i].show();
+      this.nodes[i].update();
+    }
+  }
+  
+  show() {
+    this.nodes.push(new JuniorNode(this.x, this.y, 0, hue));  // above center origin (head)
+    this.nodes.push(new JuniorNode(this.x, this.y, 315, hue));  // L ARM
+    this.nodes.push(new JuniorNode(this.x, this.y, 45, hue));  // R ARM
+    this.nodes.push(new JuniorNode(this.x, this.y, 225, hue));  // L LEG
+    this.nodes.push(new JuniorNode(this.x, this.y, 135, hue));  // R LEG
+  }
+}
+
+class JuniorNode {
+  constructor(x,y, angle, hue) {
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+    this.hue = hue;
     
+    this.history = [];
+    this.size = 0;
+    
+    this.pos = createVector(x,y);
+    this.vel = createVector(angle,-angle);
+  }
+  
+  update() {
+    // this.vel = createVector(random(-5,5), random(-5,5));
+    // this.pos.x = this.pos.x + this.vel.x;
+    // this.pos.y = this.pos.y + this.vel.y;
+
     switch(this.angle) {
       case 0:   // noggin
         this.x = this.x + random(-0.1, 0.1);
@@ -84,51 +67,88 @@ class Particle {
         this.x = this.x + random(0, 2);
         this.y = this.y + random(2, 0);
         break;
+      default:
+        this.x = this.x + random(-5, 5);
+        this.y = this.y + random(-5, 5);
+        break;
     }
+    
+    this.pos = createVector(this.x, this.y);
 
-    // for perlin noise experimentation
-    //this.x = map(noise(this.xoff1), -5, 5, 0, width); 
-    //this.y = map(noise(this.xoff2), -5, 5, 0, height);
-    //this.xoff1 += 0.1;
-    //this.xoff2 += 0.1;
-
-    let v = createVector(this.x, this.y);
-
-    this.history.push(v);
-    //console.log(this.history.length);
+    
+    this.history.push(this.pos);
 
     // will this overload CPU/RAM/browser if we don't erase old history?
-    if (this.history.length > 123) {
+    if (this.history.length > 69) {
       this.history.splice(0, 1);
-      
-      // might store the history of best rendition use it as a desired target for fitness
-      // console.log(this.history);
-
+          
       // killing the loop here will pause exploration and draw lines the length of history
-      noLoop();
+      //noLoop();
+         
+      // TODO: space them out from each other into a grid
+      
+      // OR draw one at a time very rapidly, and only show the current best fitness on screen.
+      
+      // reset and build a new random population
+      vibrations = [];
+      init();
     }
     
   }
-
-  show() {
-    beginShape();
-    for (let i = 0; i < this.history.length; i++) {
-      stroke(colors.hotpink);
-      let pos = this.history[i];
-      noFill();
-      vertex(pos.x, pos.y);
-      endShape();
-    }
-
-    noStroke();
-    fill(colors.hotpink);
-
-    ellipse(this.x, this.y, 10, 10);
-    //textSize(10);
-    //text(this.label, this.x + 5, this.y + 5);
-    //fill(0, 102, 153);
+  
+  show(){     
+    stroke(hue);
+    strokeWeight(8);
+    point(this.pos.x + random(-5, 5), this.pos.y + random(-5, 5));    
   }
 }
+
+function setup() {
+  createCanvas(1024, 768);
+  init();
+  
+}
+
+function draw() {
+  background(0);
+   
+  for (let i = 0; i < vibrations.length; i++) {
+    vibrations[i].show();
+    vibrations[i].update();
+  }
+
+}
+
+//repeated code
+
+function init() {
+  r = random(66,255);
+  g = random(66,255);
+  b = random(66,255);
+  hue = color(r,g,b);
+  
+
+  // build a random population at start (SLOW))
+  for (let i = 0; i < 5; i++) {
+    vibrations.push(new Junior(random(width), random(height), hue));
+  }
+}
+
+// enable spawning more particles at will by clicking the mouse
+function mousePressed() {
+  r = random(66,255);
+  g = random(66,255);
+  b = random(66,255);
+  hue = color(r,g,b);
+  vibrations.push(new Junior(mouseX, mouseY, hue));
+}
+
+
+
+
+
+// wiggle for arms and legs (more predefined, one shot, than a random walker)
+// https://www.alpharithms.com/how-to-draw-a-squiggly-line-in-p5js-or-processing-120715/#step-1-drawing-a-straight-line
 
 
 // THANK YOU:
